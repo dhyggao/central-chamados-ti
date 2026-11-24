@@ -1,0 +1,3 @@
+-r requirements.txt
+# Teste ponta a ponta no navegador (tests/test_ui.py); depois rode: playwright install chromium
+playwright>=1.40

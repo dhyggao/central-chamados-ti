@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="escuro" data-cores="padrao" data-texto="normal">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de Chamados TI</title>
+<script>
+  // aplica a aparência salva antes de desenhar a página (evita piscar)
+  try {
+    const a = JSON.parse(localStorage.getItem("chamados_aparencia") || "{}");
+    if (a.tema) document.documentElement.dataset.tema = a.tema;
+    if (a.cores) document.documentElement.dataset.cores = a.cores;
+    if (a.texto) document.documentElement.dataset.texto = a.texto;
+  } catch (e) {}
+</script>
+<style>
+  /* ============================ TEMAS (variáveis) ============================ */
+  :root,[data-tema="escuro"]{color-scheme:dark;
+    --fundo:#0a0f1c;--painel:#111a2b;--painel2:#0d1524;--painel3:#0f1a2c;--campo:#0b1322;--det:#0d1729;--hover:#13203a;--linha:#182337;
+    --borda:#1f2c42;--borda2:#2a3a55;--texto:#e6edf7;--texto2:#c3cfe0;--sub:#8fa1bc;--placeholder:#5b6b85;
+    --acento:#22d3ee;--logo1:#22d3ee;--logo2:#14b8a6;--sobre-acento:#04202a;--btn:#0891b2;--btn-h:#0e7490;--btn-tx:#fff;
+    --grade:rgba(34,211,238,.035);--topo1:#070b15;--topo2:#0c1626;--topo3:#0b1a2b;--topo-borda:rgba(34,211,238,.35);
+    --c-aberto:#fbbf24;--c-andamento:#7dd3fc;--c-concluido:#86efac;--c-baixa:#cbd5e1;--c-media:#7dd3fc;--c-alta:#fdba74;--c-urgente:#fca5a5;
+    --c-perigo:#fca5a5;--c-ok:#86efac;--c-aviso:#fcd34d;--c-roxo:#c4b5fd;--c-estrela:#fbbf24;--estrela-off:#334155;
+    --atraso-bg:#dc2626;--atraso-tx:#fff;--btn-ok:#16a34a;--btn-ok-h:#15803d;--btn-ok-tx:#fff;
+    --ponto-ok:#22c55e;--ponto-erro:#ef4444;--ponto-espera:#facc15;
+    --cor-cliente:#2dd4bf;--cor-tecnico:#38bdf8;--cor-admin:#fbbf24;--sobre-papel:#04202a;--sombra:rgba(0,0,0,.3)}
+  [data-tema="claro"]{color-scheme:light;
+    --fundo:#eef2f7;--painel:#ffffff;--painel2:#f6f8fb;--painel3:#ffffff;--campo:#ffffff;--det:#f7f9fc;--hover:#eef4fb;--linha:#edf1f6;
+    --borda:#dbe3ee;--borda2:#c4cfdd;--texto:#0f172a;--texto2:#334155;--sub:#5b6b82;--placeholder:#94a3b8;
+    --acento:#0e7490;--logo1:#22d3ee;--logo2:#14b8a6;--sobre-acento:#04202a;--btn:#0e7490;--btn-h:#155e75;--btn-tx:#fff;
+    --grade:rgba(15,23,42,.035);--topo1:#ffffff;--topo2:#f8fafc;--topo3:#f1f7fb;--topo-borda:rgba(14,116,144,.35);
+    --c-aberto:#b45309;--c-andamento:#1d4ed8;--c-concluido:#15803d;--c-baixa:#475569;--c-media:#0369a1;--c-alta:#c2410c;--c-urgente:#b91c1c;
+    --c-perigo:#b91c1c;--c-ok:#15803d;--c-aviso:#a16207;--c-roxo:#6d28d9;--c-estrela:#d97706;--estrela-off:#cbd5e1;
+    --atraso-bg:#dc2626;--atraso-tx:#fff;--btn-ok:#15803d;--btn-ok-h:#166534;--btn-ok-tx:#fff;
+    --ponto-ok:#16a34a;--ponto-erro:#dc2626;--ponto-espera:#ca8a04;
+    --cor-cliente:#0f766e;--cor-tecnico:#0369a1;--cor-admin:#b45309;--sobre-papel:#ffffff;--sombra:rgba(15,23,42,.08)}
+  [data-tema="contraste"]{color-scheme:dark;
+    --fundo:#000;--painel:#000;--painel2:#000;--painel3:#000;--campo:#000;--det:#0a0a0a;--hover:#1c1c1c;--linha:#5c5c5c;
+    --borda:#fff;--borda2:#fff;--texto:#fff;--texto2:#fff;--sub:#e6e6e6;--placeholder:#bdbdbd;
+    --acento:#ffff00;--logo1:#ffff00;--logo2:#ffff00;--sobre-acento:#000;--btn:#ffff00;--btn-h:#ffff8c;--btn-tx:#000;
+    --grade:transparent;--topo1:#000;--topo2:#000;--topo3:#000;--topo-borda:#ffff00;
+    --c-aberto:#ffd400;--c-andamento:#00e5ff;--c-concluido:#5cff5c;--c-baixa:#fff;--c-media:#00e5ff;--c-alta:#ffb000;--c-urgente:#ff7070;
+    --c-perigo:#ff7070;--c-ok:#5cff5c;--c-aviso:#ffd400;--c-roxo:#e0b3ff;--c-estrela:#ffd400;--estrela-off:#777;
+    --atraso-bg:#ff7070;--atraso-tx:#000;--btn-ok:#5cff5c;--btn-ok-h:#a6ffa6;--btn-ok-tx:#000;
+    --ponto-ok:#5cff5c;--ponto-erro:#ff7070;--ponto-espera:#ffd400;
+    --cor-cliente:#5cffe0;--cor-tecnico:#00e5ff;--cor-admin:#ffd400;--sobre-papel:#000;--sombra:transparent}
+  /* Paleta Okabe-Ito: segura para protanopia e deuteranopia (daltonismo vermelho-verde) */
+  [data-tema="escuro"][data-cores="dalt"]{
+    --c-aberto:#E69F00;--c-andamento:#56B4E9;--c-concluido:#3DC9A6;--c-baixa:#BBBBBB;--c-media:#56B4E9;--c-alta:#E69F00;--c-urgente:#E58FC2;
+    --c-perigo:#E58FC2;--c-ok:#3DC9A6;--c-aviso:#F0E442;--c-roxo:#B9A7FF;--c-estrela:#F0E442;
+    --atraso-bg:#CC79A7;--atraso-tx:#000;--btn-ok:#007A5A;--btn-ok-h:#00664b;--ponto-ok:#56B4E9;--ponto-erro:#E58FC2;--ponto-espera:#F0E442;
+    --cor-cliente:#3DC9A6;--cor-tecnico:#56B4E9;--cor-admin:#E69F00}
+  [data-tema="claro"][data-cores="dalt"]{
+    --c-aberto:#A66300;--c-andamento:#0063A0;--c-concluido:#00775A;--c-baixa:#555;--c-media:#0063A0;--c-alta:#A66300;--c-urgente:#9E3F78;
+    --c-perigo:#9E3F78;--c-ok:#00775A;--c-aviso:#7A6E00;--c-roxo:#5442A8;--c-estrela:#A66300;
+    --atraso-bg:#9E3F78;--atraso-tx:#fff;--btn-ok:#00775A;--btn-ok-h:#005f48;--ponto-ok:#0072B2;--ponto-erro:#9E3F78;--ponto-espera:#A66300;
+    --cor-cliente:#00775A;--cor-tecnico:#0063A0;--cor-admin:#A66300}
+  /* Símbolos nos indicadores: a informação não depende só da cor */
+  [data-cores="dalt"] .st-aberto::before,[data-tema="contraste"] .st-aberto::before{content:"○ "}
+  [data-cores="dalt"] .st-andamento::before,[data-tema="contraste"] .st-andamento::before{content:"► "}
+  [data-cores="dalt"] .st-concluido::before,[data-tema="contraste"] .st-concluido::before{content:"✓ "}
+  [data-cores="dalt"] .pr-baixa::before,[data-tema="contraste"] .pr-baixa::before{content:"▽ "}
+  [data-cores="dalt"] .pr-media::before,[data-tema="contraste"] .pr-media::before{content:"◇ "}
+  [data-cores="dalt"] .pr-alta::before,[data-tema="contraste"] .pr-alta::before{content:"▲ "}
+  [data-cores="dalt"] .pr-urgente::before,[data-tema="contraste"] .pr-urgente::before{content:"‼ "}
+  [data-cores="dalt"] .atraso::before,[data-tema="contraste"] .atraso::before{content:"⚠ "}
+  [data-tema="contraste"] .badge,[data-tema="contraste"] .tag{border:1px solid currentColor}
+  [data-tema="contraste"] :focus-visible{outline:3px solid #ffff00 !important;outline-offset:2px}
+  [data-tema="contraste"] .btn.sec,[data-tema="contraste"] .filtro{border-width:2px}
+  [data-tema="contraste"] a{color:#ffff00}
+  [data-texto="grande"] body{zoom:1.18}
+
+  /* ================================ BASE ================================ */
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  body{margin:0;color:var(--texto);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background-color:var(--fundo);
+    background-image:linear-gradient(var(--grade) 1px,transparent 1px),linear-gradient(90deg,var(--grade) 1px,transparent 1px);background-size:28px 28px;min-height:100vh}
+  a{color:var(--acento)}
+  .mono{font-family:Consolas,"Cascadia Mono","Courier New",monospace}
+  .ic{display:inline-grid;place-items:center;flex:none}
+  .ic svg{display:block}
+  .tint{background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c)}
+  /* topo */
+  .topo{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 28px;
+    background:linear-gradient(90deg,var(--topo1),var(--topo2) 60%,var(--topo3));border-bottom:1px solid var(--topo-borda);
+    box-shadow:0 1px 18px color-mix(in srgb,var(--acento) 10%,transparent)}
+  .marca{display:flex;align-items:center;gap:13px}
+  .logo{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--logo1),var(--logo2));color:var(--sobre-acento);
+    display:grid;place-items:center;box-shadow:0 0 16px color-mix(in srgb,var(--logo1) 35%,transparent)}
+  .marca strong{display:flex;align-items:center;gap:8px;font-size:18px;flex-wrap:wrap}
+  .marca small{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+  .topo-dir{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .relogio{font-size:13px;color:var(--acento);background:color-mix(in srgb,var(--acento) 8%,transparent);border:1px solid color-mix(in srgb,var(--acento) 30%,transparent);border-radius:8px;padding:5px 10px}
+  .pilula{font-size:12px;padding:6px 12px;border-radius:999px;background:var(--painel3);border:1px solid var(--borda2);white-space:nowrap}
+  .pilula i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ponto-espera);margin-right:6px;box-shadow:0 0 8px var(--ponto-espera)}
+  .pilula.ok i{background:var(--ponto-ok);box-shadow:0 0 8px var(--ponto-ok)}.pilula.erro i{background:var(--ponto-erro);box-shadow:0 0 8px var(--ponto-erro)}
+  .chip-usuario{display:flex;align-items:center;gap:10px;padding:4px 6px 4px 4px;border:1px solid var(--borda2);border-radius:999px;background:var(--painel3)}
+  .avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:700;color:var(--sobre-papel);background:var(--cor-papel,var(--acento))}
+  .chip-usuario .nome{font-size:13px;font-weight:600;line-height:1.15}
+  .chip-usuario .papel{font-size:11px;color:var(--sub)}
+  .pp-cliente{--cor-papel:var(--cor-cliente)}.pp-tecnico{--cor-papel:var(--cor-tecnico)}.pp-admin{--cor-papel:var(--cor-admin)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;letter-spacing:.3px;
+    background:color-mix(in srgb,var(--cor-papel) 16%,transparent);color:var(--cor-papel)}
+  /* aparência */
+  .aparencia{position:relative}
+  .menu-aparencia{position:absolute;right:0;top:calc(100% + 10px);width:330px;background:var(--painel);border:1px solid var(--borda2);border-radius:12px;
+    padding:14px;box-shadow:0 16px 40px var(--sombra);z-index:20}
+  .menu-aparencia h3{margin:0 0 10px;font-size:14px;display:flex;align-items:center;gap:8px}
+  .grupo-ap{margin-bottom:12px}
+  .grupo-ap>span{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);margin-bottom:6px}
+  .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--campo);border:1px solid var(--borda2);border-radius:9px;padding:3px}
+  .seg button{border:0;background:transparent;color:var(--texto2);font:inherit;font-size:12.5px;font-weight:600;padding:7px 4px;border-radius:6px;cursor:pointer}
+  .seg button.ativo{background:var(--btn);color:var(--btn-tx)}
+  .nota-ap{font-size:11.5px;color:var(--sub);line-height:1.4;margin-top:6px}
+  .amostra{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+  .pagina{max-width:1320px;margin:0 auto;padding:20px 28px 28px}
+  /* início e login */
+  .centro{display:grid;place-items:center;padding:34px 16px}
+  .inicio{width:100%;max-width:1040px}
+  .inicio h1{text-align:center;font-size:24px;margin:6px 0 4px}
+  .inicio>p{text-align:center;color:var(--sub);margin:0 0 22px}
+  .portais{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:900px){.portais{grid-template-columns:1fr}}
+  .portal{display:flex;flex-direction:column;gap:10px;background:var(--painel);border:1px solid var(--borda);border-top:4px solid var(--cor-papel);border-radius:14px;padding:20px;
+    box-shadow:0 10px 28px var(--sombra)}
+  .portal .ic-grande{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--cor-papel) 15%,transparent);color:var(--cor-papel)}
+  .portal h2{font-size:17px}
+  .portal p{margin:0;color:var(--sub);font-size:13px;line-height:1.45;flex:1}
+  .portal .link{font-size:12px;color:var(--acento);background:var(--campo);border:1px solid var(--borda2);border-radius:8px;padding:7px 9px;word-break:break-all}
+  .portal .acoes-portal{display:flex;gap:8px}
+  .portal .acoes-portal .btn{flex:1}
+  .login-card{width:100%;max-width:470px;background:var(--painel);border:1px solid var(--borda);border-top:4px solid var(--cor-papel,var(--acento));border-radius:16px;padding:26px 28px;
+    box-shadow:0 20px 50px var(--sombra)}
+  .login-topo{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .login-topo .ic-grande{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--cor-papel) 16%,transparent);color:var(--cor-papel)}
+  .login-topo h1{font-size:19px;margin:0}
+  .login-topo p{margin:3px 0 0;font-size:12.5px;color:var(--sub)}
+  .abas-login{display:grid;grid-template-columns:1fr 1fr;background:var(--campo);border:1px solid var(--borda2);border-radius:10px;padding:4px;margin-bottom:16px}
+  .abas-login button{border:0;background:transparent;color:var(--sub);font:inherit;font-size:13.5px;font-weight:600;padding:8px;border-radius:7px;cursor:pointer}
+  .abas-login button.ativo{background:var(--btn);color:var(--btn-tx)}
+  .link-texto{border:0;background:transparent;color:var(--acento);font:inherit;font-size:13px;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+  .linha-links{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+  .info-portal{display:flex;gap:10px;align-items:flex-start;margin-top:18px;padding-top:16px;border-top:1px dashed var(--borda2);font-size:12.5px;color:var(--sub);line-height:1.45}
+  .info-portal .ic{color:var(--cor-papel)}
+  /* abas do admin */
+  .abas{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--borda)}
+  .abas button{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--sub);font:inherit;font-size:14px;font-weight:600;
+    padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .abas button:hover{color:var(--texto)}
+  .abas button.ativo{color:var(--acento);border-bottom-color:var(--acento)}
+  /* formulários */
+  .campo{display:block;margin-bottom:12px}
+  .campo>span{display:block;font-size:12.5px;font-weight:600;color:var(--texto2);margin-bottom:5px}
+  .campo>span em{font-style:normal;font-weight:400;color:var(--sub)}
+  input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--borda2);border-radius:8px;font:inherit;font-size:14px;color:var(--texto);
+    background:var(--campo);outline:none;transition:border-color .15s,box-shadow .15s}
+  input::placeholder,textarea::placeholder{color:var(--placeholder)}
+  option,optgroup{background:var(--painel2);color:var(--texto)}
+  textarea{resize:vertical;min-height:84px}
+  input:focus,select:focus,textarea:focus{border-color:var(--acento);box-shadow:0 0 0 3px color-mix(in srgb,var(--acento) 20%,transparent)}
+  .linha2{display:grid;grid-template-columns:100px 1fr;gap:12px}
+  .linha2b{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .com-ic{display:flex;gap:8px;align-items:center}
+  .com-ic .ic{width:40px;height:40px;border-radius:8px;background:color-mix(in srgb,var(--acento) 10%,transparent);border:1px solid color-mix(in srgb,var(--acento) 30%,transparent);color:var(--acento)}
+  /* indicadores */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  .kpis.k6{grid-template-columns:repeat(3,1fr)}
+  .kpi{--c:var(--c-aberto);display:flex;align-items:center;justify-content:space-between;background:var(--painel);border:1px solid var(--borda);border-radius:12px;
+    padding:14px 16px;border-top:3px solid var(--c)}
+  .kpi span{font-size:11.5px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+  .kpi strong{display:block;font-size:28px;margin-top:2px}
+  .kpi strong small{font-size:13px;color:var(--sub);font-weight:600;margin-left:4px}
+  .kpi .ic{width:42px;height:42px;border-radius:10px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+  .kpi.and{--c:var(--c-andamento)}.kpi.fim{--c:var(--c-concluido)}.kpi.atr{--c:var(--c-perigo)}.kpi.aval{--c:var(--c-roxo)}.kpi.neutro{--c:var(--acento)}
+  /* layout */
+  .grade{display:grid;grid-template-columns:minmax(330px,410px) 1fr;gap:18px;align-items:start}
+  .grade.uma{grid-template-columns:1fr}
+  .grade.meio{grid-template-columns:1fr 1fr}
+  @media (max-width:980px){.grade,.grade.meio{grid-template-columns:1fr}.kpis,.kpis.k6{grid-template-columns:repeat(2,1fr)}}
+  .cartao{background:var(--painel);border:1px solid var(--borda);border-radius:12px;padding:20px;box-shadow:0 8px 24px var(--sombra)}
+  .cab{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  h2{font-size:16px;margin:0;display:flex;align-items:center;gap:9px}
+  .chip-ic{width:30px;height:30px;border-radius:8px;background:color-mix(in srgb,var(--acento) 10%,transparent);color:var(--acento);display:grid;place-items:center}
+  .desc{font-size:12.5px;color:var(--sub);margin:6px 0 14px}
+  .etapa{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--acento);text-transform:uppercase;letter-spacing:.7px;
+    margin:6px 0 10px;padding-top:12px;border-top:1px dashed var(--borda2)}
+  .etapa b{width:20px;height:20px;border-radius:6px;background:var(--acento);color:var(--sobre-acento);display:grid;place-items:center;font-size:11px}
+  .solicitante{display:flex;align-items:center;gap:10px;background:var(--campo);border:1px solid var(--borda2);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px}
+  .solicitante .ic{color:var(--cor-cliente)}
+  .dica{--c:var(--c-aviso);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--c);background:color-mix(in srgb,var(--c) 10%,transparent);
+    border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:8px;padding:7px 10px;margin:-2px 0 12px}
+  .contador{float:right;font-weight:400;color:var(--sub)}
+  .prios{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .prios label{cursor:pointer;position:relative}.prios input{position:absolute;left:0;top:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none}
+  .prios span{display:block;text-align:center;border:1px solid var(--borda2);border-radius:8px;padding:7px 4px;font-size:12.5px;font-weight:600;color:var(--texto2);background:var(--campo)}
+  .prios span small{display:block;font-weight:400;font-size:11px;color:var(--sub)}
+  .prios input:checked+span{border-color:var(--acento);background:color-mix(in srgb,var(--acento) 12%,transparent);color:var(--acento)}
+  .prios input[value="Urgente"]:checked+span{border-color:var(--c-urgente);background:color-mix(in srgb,var(--c-urgente) 12%,transparent);color:var(--c-urgente)}
+  .prios input:focus-visible+span{outline:2px solid var(--acento);outline-offset:2px}
+  /* botões */
+  .acoes{display:flex;justify-content:flex-end;gap:10px;margin-top:4px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-size:14px;font-weight:600;
+    cursor:pointer;background:var(--btn);color:var(--btn-tx);transition:background .15s,box-shadow .15s;white-space:nowrap;text-decoration:none}
+  .btn:hover{background:var(--btn-h);box-shadow:0 0 12px color-mix(in srgb,var(--acento) 25%,transparent)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+  .btn.sec{background:transparent;color:var(--texto2);border:1px solid var(--borda2)}.btn.sec:hover{background:var(--hover)}
+  .btn.mini{padding:6px 11px;font-size:12.5px}
+  .btn.verde{background:var(--btn-ok);color:var(--btn-ok-tx)}.btn.verde:hover{background:var(--btn-ok-h)}
+  .btn.perigo{background:transparent;color:var(--c-perigo);border:1px solid color-mix(in srgb,var(--c-perigo) 50%,transparent)}
+  .btn.perigo:hover{background:color-mix(in srgb,var(--c-perigo) 12%,transparent)}
+  .btn.cheio{width:100%}
+  .msg{--c:var(--c-ok);margin-top:12px;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.45;color:var(--c);
+    background:color-mix(in srgb,var(--c) 10%,transparent);border:1px solid color-mix(in srgb,var(--c) 40%,transparent)}
+  .msg.erro{--c:var(--c-perigo)}
+  /* fila */
+  .barra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 4px}
+  .grupo-filtros{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  #escopos:not([hidden])+.grupo-filtros{padding-left:10px;border-left:1px solid var(--borda2)}
+  .filtro{border:1px solid var(--borda2);background:transparent;border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--texto2)}
+  .filtro:hover{border-color:var(--acento)}
+  .filtro.ativo{background:var(--btn);border-color:var(--btn);color:var(--btn-tx)}
+  .busca{display:flex;gap:6px;margin-left:auto;min-width:240px;flex:1;max-width:380px}
+  .total{font-size:12px;color:var(--acento);background:color-mix(in srgb,var(--acento) 10%,transparent);border-radius:999px;padding:3px 10px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--sub);background:var(--painel2);padding:9px 10px;border-bottom:1px solid var(--borda)}
+  td{padding:10px;border-bottom:1px solid var(--linha);vertical-align:middle}
+  tr.ch{cursor:pointer}tr.ch:hover td,tr.ch.aberta td{background:var(--hover)}
+  .proto{font-family:Consolas,"Courier New",monospace;font-size:12px;background:color-mix(in srgb,var(--acento) 10%,transparent);color:var(--acento);
+    border:1px solid color-mix(in srgb,var(--acento) 30%,transparent);padding:3px 7px;border-radius:6px;white-space:nowrap}
+  .forte{font-weight:600}.peq{font-size:12px;color:var(--sub)}
+  .tipo{display:flex;align-items:center;gap:9px}
+  .tipo .ic{width:30px;height:30px;border-radius:8px;background:color-mix(in srgb,var(--acento) 10%,transparent);color:var(--acento)}
+  .badge{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;white-space:nowrap;margin:1px 2px 1px 0;
+    background:color-mix(in srgb,var(--c,var(--sub)) 16%,transparent);color:var(--c,var(--sub))}
+  .st-aberto{--c:var(--c-aberto)}.st-andamento{--c:var(--c-andamento)}.st-concluido{--c:var(--c-concluido)}
+  .pr-baixa{--c:var(--c-baixa)}.pr-media{--c:var(--c-media)}.pr-alta{--c:var(--c-alta)}.pr-urgente{--c:var(--c-urgente)}
+  .pref{--c:var(--c-roxo)}.estrelas-tag{--c:var(--c-estrela)}
+  .badge.atraso{background:var(--atraso-bg);color:var(--atraso-tx)}
+  .sem-tec{color:var(--placeholder);font-style:italic;font-size:12px}
+  tr.det td{background:var(--det);padding:0 10px 16px;border-bottom:1px solid var(--borda2)}
+  .det-grade{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;padding:12px 4px 0}
+  .rotulo{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--acento);margin-bottom:7px}
+  .texto-desc{margin:0 0 12px;background:var(--campo);border:1px solid var(--borda2);border-radius:8px;padding:10px;white-space:pre-wrap;line-height:1.45}
+  .solucao{--c:var(--c-ok);margin:12px 0 0;background:color-mix(in srgb,var(--c) 8%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:8px;padding:10px;line-height:1.45}
+  .solucao .rotulo{color:var(--c)}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin:0;font-size:12.5px}
+  dt{color:var(--sub)}dd{margin:0}
+  .hist{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--borda2);max-height:330px;overflow:auto}
+  .hist li{position:relative;margin-bottom:11px;font-size:12.5px;line-height:1.4}
+  .hist li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--acento);border:2px solid var(--det)}
+  .hist li.comentario::before{background:var(--c-roxo)}
+  .hist li.avaliacao::before{background:var(--c-estrela)}
+  .hist .quem{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .hist .balao{margin-top:3px;background:var(--campo);border:1px solid var(--borda);border-radius:8px;padding:6px 9px}
+  .det-acoes{display:flex;flex-direction:column;gap:10px;margin-top:12px;padding:12px 4px 0;border-top:1px dashed var(--borda2)}
+  .linha-acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .linha-acoes textarea{min-height:44px;height:44px;flex:1;min-width:240px}
+  .linha-acoes select{width:auto;min-width:210px}
+  .estrelas{display:flex;gap:2px}
+  .estrela{border:0;background:transparent;font-size:24px;line-height:1;color:var(--estrela-off);cursor:pointer;padding:0 2px}
+  .estrela.on{color:var(--c-estrela)}
+  .aviso{font-size:12.5px;color:var(--c-perigo)}
+  .leitura{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--sub)}
+  .vazio{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--sub);font-size:13px;padding:28px 0 10px}
+  .vazio .ic{color:var(--placeholder)}
+  /* painel */
+  .barras{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .barra-linha{display:grid;grid-template-columns:30px 1fr 40px;gap:10px;align-items:center;font-size:12.5px}
+  .barra-linha .ic{width:30px;height:30px;border-radius:8px;background:color-mix(in srgb,var(--acento) 10%,transparent);color:var(--acento)}
+  .trilho{height:8px;background:var(--campo);border:1px solid var(--borda);border-radius:999px;overflow:hidden;margin-top:4px}
+  .trilho i{display:block;height:100%;background:var(--acento);border-radius:999px}
+  .num{text-align:right;font-weight:700}
+  .resumo-usuarios{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  .resumo-usuarios div{background:var(--campo);border:1px solid var(--borda);border-radius:10px;padding:12px;text-align:center}
+  .resumo-usuarios strong{display:block;font-size:24px}
+  .rodape{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--sub);margin:18px 0}
+  .rodape .ic{color:var(--acento)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="marca">
+    <div class="logo"><i class="ic" data-ic="headset" data-t="24"></i></div>
+    <div><strong><span id="projeto">Central de Chamados TI</span><span id="portal-tag" class="tag" hidden></span></strong>
+      <small id="equipe">Registro de problemas de equipamentos · Suporte técnico</small></div>
+  </div>
+  <div class="topo-dir">
+    <span id="relogio" class="relogio mono" aria-hidden="true">--:--:--</span>
+    <span id="pilula" class="pilula" role="status"><i></i>Conectando...</span>
+    <div class="aparencia">
+      <button id="btn-aparencia" class="btn sec mini" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="menu-aparencia">
+        <i class="ic" data-ic="paleta" data-t="15"></i>Aparência</button>
+      <div id="menu-aparencia" class="menu-aparencia" role="dialog" aria-label="Aparência e acessibilidade" hidden>
+        <h3><i class="ic" data-ic="olho" data-t="16"></i>Aparência e acessibilidade</h3>
+        <div class="grupo-ap"><span>Tema</span>
+          <div class="seg" data-grupo="tema">
+            <button type="button" data-valor="escuro">Escuro</button><button type="button" data-valor="claro">Claro</button><button type="button" data-valor="contraste">Alto contraste</button>
+          </div></div>
+        <div class="grupo-ap"><span>Cores</span>
+          <div class="seg" data-grupo="cores"><button type="button" data-valor="padrao">Padrão</button><button type="button" data-valor="dalt">Daltonismo</button></div>
+          <div class="nota-ap">Daltonismo: paleta segura para quem confunde vermelho e verde (protanopia e deuteranopia), com símbolos em status e prioridades.</div>
+          <div class="amostra"><span class="badge st-aberto">Aberto</span><span class="badge st-andamento">Em atendimento</span><span class="badge st-concluido">Resolvido</span>
+            <span class="badge pr-alta">Alta</span><span class="badge pr-urgente">Urgente</span><span class="badge atraso">Atrasado</span></div></div>
+        <div class="grupo-ap" style="margin-bottom:0"><span>Tamanho do texto</span>
+          <div class="seg" data-grupo="texto"><button type="button" data-valor="normal">Normal</button><button type="button" data-valor="grande">Grande</button></div></div>
+      </div>
+    </div>
+    <div id="usuario-chip" class="chip-usuario" hidden>
+      <span id="u-avatar" class="avatar">--</span>
+      <div><div id="u-nome" class="nome"></div><div id="u-papel" class="papel"></div></div>
+      <button id="sair" class="btn sec mini" type="button"><i class="ic" data-ic="sair" data-t="14"></i>Sair</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ PÁGINA INICIAL (3 acessos) ============================ -->
+<div id="tela-inicio" class="centro" hidden>
+  <div class="inicio">
+    <h1>Escolha o seu acesso</h1>
+    <p>Cada perfil tem um link próprio. Envie para cada pessoa somente o link dela.</p>
+    <label id="servidor-inicio" class="campo" style="max-width:520px;margin:0 auto 18px" hidden><span>Servidor (endereço exibido no Colab)</span>
+      <input id="api-inicio" class="mono" placeholder="https://xxxx.trycloudflare.com"></label>
+    <div class="portais" id="lista-portais"></div>
+  </div>
+</div>
+
+<!-- ============================ LOGIN DO PORTAL ============================ -->
+<div id="tela-login" class="centro" hidden>
+  <div class="login-card">
+    <div class="login-topo">
+      <div class="ic-grande" id="login-ic"></div>
+      <div><h1 id="login-titulo">Acesso</h1><p id="login-sub"></p></div>
+    </div>
+    <label id="servidor-box" class="campo"><span>Servidor (endereço exibido no Colab)</span>
+      <input id="api-url" class="mono" placeholder="https://xxxx.trycloudflare.com"></label>
+    <div id="abas-login" class="abas-login">
+      <button type="button" data-aba="entrar" class="ativo">Entrar</button>
+      <button type="button" data-aba="cadastro">Criar conta</button>
+    </div>
+    <form id="form-login" novalidate>
+      <label class="campo"><span>E-mail</span><input id="l-email" type="email" autocomplete="username" placeholder="voce@exemplo.com"></label>
+      <label class="campo"><span>Senha</span><input id="l-senha" type="password" autocomplete="current-password" placeholder="••••••"></label>
+      <button id="b-entrar" class="btn cheio" type="submit"><i class="ic" data-ic="cadeado" data-t="15"></i><span>Entrar</span></button>
+      <div class="linha-links"><button type="button" class="link-texto" id="ir-esqueci">Esqueci minha senha</button></div>
+    </form>
+    <form id="form-cadastro" novalidate hidden>
+      <label class="campo"><span>Nome completo</span><input id="c-nome" maxlength="80" placeholder="Ex.: Maria da Silva"></label>
+      <div class="linha2">
+        <label class="campo"><span>Idade</span><input id="c-idade" type="number" min="14" max="110" placeholder="32"></label>
+        <label class="campo"><span>CPF</span><input id="c-cpf" class="mono cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"></label>
+      </div>
+      <label class="campo"><span>E-mail <em>(use um e-mail real: é por ele que você recupera a senha)</em></span><input id="c-email" type="email" autocomplete="username" placeholder="voce@exemplo.com"></label>
+      <label class="campo"><span>Senha <em>(mínimo 6 caracteres)</em></span><input id="c-senha" type="password" autocomplete="new-password"></label>
+      <button id="b-cadastrar" class="btn cheio" type="submit"><i class="ic" data-ic="usuario" data-t="15"></i><span>Criar conta e entrar</span></button>
+    </form>
+    <form id="form-esqueci" novalidate hidden>
+      <p class="desc" style="margin-top:0">Informe o e-mail da sua conta. O Firebase envia um link para você criar uma nova senha.</p>
+      <label class="campo"><span>E-mail</span><input id="e-email" type="email" autocomplete="username" placeholder="voce@exemplo.com"></label>
+      <button id="b-esqueci" class="btn cheio" type="submit"><i class="ic" data-ic="email" data-t="15"></i><span>Enviar link de nova senha</span></button>
+      <div class="linha-links"><button type="button" class="link-texto" id="voltar-login">Voltar para o login</button></div>
+    </form>
+    <div id="login-msg" class="msg" role="alert" hidden></div>
+    <div class="info-portal"><i id="info-ic" class="ic"></i><span id="info-portal"></span></div>
+  </div>
+</div>
+
+<!-- ================================ SISTEMA ================================ -->
+<div id="tela-app" hidden>
+  <div class="pagina">
+    <nav id="abas" class="abas" hidden>
+      <button type="button" data-vista="chamados"><i class="ic" data-ic="ticket" data-t="16"></i>Chamados (OS)</button>
+      <button type="button" data-vista="painel"><i class="ic" data-ic="painel" data-t="16"></i>Painel</button>
+      <button type="button" data-vista="usuarios"><i class="ic" data-ic="usuarios" data-t="16"></i>Clientes e técnicos</button>
+    </nav>
+
+    <!-- CHAMADOS -->
+    <div id="vista-chamados">
+      <section id="kpis" class="kpis"></section>
+      <main id="grade" class="grade">
+        <section id="cartao-abrir" class="cartao">
+          <h2><span class="chip-ic"><i class="ic" data-ic="ticket"></i></span>Solicitar atendimento</h2>
+          <p class="desc">Descreva o que precisa. Um técnico assume o seu chamado e conversa com você por aqui.</p>
+          <form id="form" novalidate autocomplete="off">
+            <div class="etapa"><b>1</b>Solicitante</div>
+            <div class="solicitante"><i class="ic" data-ic="usuario" data-t="18"></i><span id="solicitante-info"></span></div>
+            <div id="dica-pref" class="dica" hidden><i class="ic" data-ic="estrela" data-t="15"></i>Atendimento preferencial (60+): sua prioridade sobe um nível.</div>
+            <div class="etapa"><b>2</b>O que você precisa</div>
+            <div class="campo"><span>Tipo de solicitação</span>
+              <div class="com-ic"><i id="tipo-ic" class="ic" data-ic="ajuda" data-t="20"></i><select id="tipo" aria-label="Tipo de solicitação"></select></div></div>
+            <div class="linha2b">
+              <label class="campo"><span>Setor</span><select id="setor"></select></label>
+              <label class="campo"><span>Local / sala</span><input id="local" maxlength="60" placeholder="Ex.: Laboratório 03"></label>
+            </div>
+            <label class="campo"><span>Nº de patrimônio do equipamento <em>(opcional)</em></span><input id="patrimonio" class="mono" maxlength="20" placeholder="Ex.: CIESA-04512"></label>
+            <fieldset class="campo" style="border:0;padding:0;margin:0 0 12px"><legend class="sr">Prioridade</legend><span style="display:block;font-size:12.5px;font-weight:600;color:var(--texto2);margin-bottom:5px">Prioridade</span><div id="prios" class="prios"></div></fieldset>
+            <label class="campo"><span>Descrição do problema <span id="contador" class="contador">0/500</span></span>
+              <textarea id="descricao" maxlength="500" placeholder="O que aconteceu, desde quando, mensagem de erro..."></textarea></label>
+            <div class="acoes">
+              <button type="reset" class="btn sec"><i class="ic" data-ic="limpar" data-t="15"></i>Limpar</button>
+              <button type="submit" id="enviar" class="btn"><i class="ic" data-ic="enviar" data-t="15"></i><span id="enviar-txt">Abrir chamado</span></button>
+            </div>
+            <div id="msg" class="msg" role="status" hidden></div>
+          </form>
+        </section>
+
+        <section class="cartao">
+          <div class="cab">
+            <h2><span class="chip-ic"><i class="ic" data-ic="fila"></i></span><span id="titulo-fila">Chamados</span> <span id="total" class="total mono">0</span></h2>
+            <button id="atualizar" class="btn sec mini" type="button"><i class="ic" data-ic="atualizar" data-t="14"></i>Atualizar</button>
+          </div>
+          <div class="barra">
+            <div id="escopos" class="grupo-filtros">
+              <button class="filtro" data-escopo="fila">Na fila</button>
+              <button class="filtro" data-escopo="meus">Meus</button>
+              <button class="filtro" data-escopo="todos">Todos</button>
+            </div>
+            <div class="grupo-filtros">
+              <button class="filtro ativo" data-status="Todos">Todos status</button>
+              <button class="filtro" data-status="Aberto">Abertos</button>
+              <button class="filtro" data-status="Em andamento">Em atendimento</button>
+              <button class="filtro" data-status="Concluído">Resolvidos</button>
+            </div>
+            <form id="form-busca" class="busca">
+              <input id="busca" aria-label="Consultar chamados" placeholder="Consultar: protocolo, nome, CPF, local...">
+              <button class="btn mini" type="submit"><i class="ic" data-ic="lupa" data-t="15"></i>Consultar</button>
+            </form>
+          </div>
+          <table>
+            <thead><tr id="cabecalho"></tr></thead>
+            <tbody id="lista"></tbody>
+          </table>
+          <div id="vazio" class="vazio"><i class="ic" data-ic="monitor" data-t="34"></i><span id="vazio-txt">Carregando...</span></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- PAINEL (administrador) -->
+    <div id="vista-painel" hidden>
+      <section id="painel-kpis" class="kpis k6"></section>
+      <div class="grade meio">
+        <section class="cartao">
+          <div class="cab"><h2><span class="chip-ic"><i class="ic" data-ic="chave"></i></span>Desempenho por técnico</h2>
+            <button id="atualizar-painel" class="btn sec mini" type="button"><i class="ic" data-ic="atualizar" data-t="14"></i>Atualizar</button></div>
+          <table><thead><tr><th>Técnico</th><th>Em atendimento</th><th>Resolvidos</th><th>Satisfação</th></tr></thead><tbody id="p-tecnicos"></tbody></table>
+          <div class="rotulo" style="margin-top:22px"><i class="ic" data-ic="usuarios" data-t="14"></i>Usuários cadastrados</div>
+          <div id="p-usuarios" class="resumo-usuarios"></div>
+        </section>
+        <section class="cartao">
+          <h2><span class="chip-ic"><i class="ic" data-ic="painel"></i></span>Chamados por tipo</h2>
+          <div id="p-tipos" class="barras"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- CLIENTES E TÉCNICOS (administrador) -->
+    <div id="vista-usuarios" hidden>
+      <div class="grade">
+        <section class="cartao">
+          <h2><span class="chip-ic"><i class="ic" data-ic="atribuir"></i></span>Novo técnico ou administrador</h2>
+          <p class="desc">A conta é criada no Firebase Authentication. Clientes criam a própria conta pelo link do cliente.</p>
+          <form id="form-usuario" novalidate autocomplete="off">
+            <label class="campo"><span>Nome completo</span><input id="n-nome" maxlength="80" placeholder="Ex.: Carlos Souza"></label>
+            <label class="campo"><span>E-mail</span><input id="n-email" type="email" placeholder="tecnico@exemplo.com"></label>
+            <label class="campo"><span>Senha inicial <em>(mínimo 6; a pessoa pode trocar em "Esqueci minha senha")</em></span><input id="n-senha" type="text" class="mono"></label>
+            <label class="campo"><span>Perfil</span><select id="n-papel"><option value="tecnico">Técnico</option><option value="admin">Administrador</option></select></label>
+            <div class="acoes"><button type="submit" id="b-criar" class="btn"><i class="ic" data-ic="mais" data-t="15"></i><span>Criar usuário</span></button></div>
+            <div id="msg-usuario" class="msg" role="status" hidden></div>
+          </form>
+        </section>
+        <section class="cartao">
+          <div class="cab"><h2><span class="chip-ic"><i class="ic" data-ic="usuarios"></i></span>Usuários do sistema <span id="total-usuarios" class="total mono">0</span></h2></div>
+          <div class="barra">
+            <div class="grupo-filtros" id="filtro-papel">
+              <button class="filtro ativo" data-papel="todos">Todos</button>
+              <button class="filtro" data-papel="cliente">Clientes</button>
+              <button class="filtro" data-papel="tecnico">Técnicos</button>
+              <button class="filtro" data-papel="admin">Administradores</button>
+            </div>
+          </div>
+          <table><thead><tr><th>Usuário</th><th>Perfil</th><th>Situação</th><th>Chamados</th><th>Criado</th><th></th></tr></thead><tbody id="lista-usuarios"></tbody></table>
+          <div id="aviso-usuarios" class="aviso" style="margin-top:10px"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="rodape"><i class="ic" data-ic="monitor" data-t="14"></i>Navegador → <i class="ic" data-ic="servidor" data-t="14"></i>API Flask no Google Colab → <i class="ic" data-ic="banco" data-t="14"></i>Firebase (Authentication + Realtime Database) · HTTPS</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, texto) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (texto !== undefined && texto !== null) e.textContent = texto;
+    return e;
+  };
+
+  // ---------------- ícones de suporte técnico (SVG em traço) ----------------
+  const IC = {
+    headset: '<path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2z"/><path d="M3 16a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2z"/><path d="M18 18c0 2-2 3-5 3h-1"/>',
+    servidor: '<rect x="2" y="3" width="20" height="8" rx="2"/><rect x="2" y="13" width="20" height="8" rx="2"/><path d="M6 7h.01M6 17h.01M10 7h4M10 17h4"/>',
+    ticket: '<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/><path d="M13 5v2M13 11v2M13 17v2"/>',
+    chave: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+    ok: '<circle cx="12" cy="12" r="10"/><path d="M8 12.5l3 3 5-6"/>',
+    alarme: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M5 3L2 6M22 6l-3-3"/>',
+    fila: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    atualizar: '<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/>',
+    lupa: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    enviar: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>',
+    limpar: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
+    estrela: '<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+    monitor: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    banco: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/>',
+    historico: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M9 10h6M9 14h6M9 18h3"/>',
+    descricao: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
+    play: '<circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4z"/>',
+    voltar: '<path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/>',
+    chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    sair: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    usuario: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+    usuarios: '<circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M16 3.5a4 4 0 0 1 0 8M22 21c0-3-1.5-5-4-5.7"/>',
+    atribuir: '<circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M19 8v6M16 11h6"/>',
+    painel: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+    escudo: '<path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/>',
+    mais: '<path d="M12 5v14M5 12h14"/>',
+    cadeado: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    relogio: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    paleta: '<circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A5.6 5.6 0 0 0 22 9.8C22 5.5 17.5 2 12 2z"/>',
+    olho: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    email: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/>',
+    copiar: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    seta: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    energia_pc: '<path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/>',
+    lento: '<path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>',
+    impressora: '<path d="M6 9V2h12v7"/><rect x="2" y="9" width="20" height="9" rx="2"/><path d="M6 14h12v8H6z"/>',
+    teclado: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+    projetor: '<rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="16" cy="12" r="2.5"/><path d="M6 12h4M5 17l-1 3M19 17l1 3"/>',
+    software: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/>',
+    bug: '<rect x="8" y="6" width="8" height="14" rx="4"/><path d="M12 20v-9M4 13h4M16 13h4M5 7l3 2M19 7l-3 2M5 19l3-2M19 19l-3-2M9.5 3.5l1.5 2.5M14.5 3.5L13 6"/>',
+    senha: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2M16 7l3 3M18.5 4.5l2 2"/>',
+    wifi: '<path d="M2 8.8a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><path d="M12 19.5h.01"/>',
+    telefone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+    tomada: '<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/>',
+    ajuda: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+  };
+  const ICONE_TIPO = {
+    "Computador não liga": "energia_pc", "Computador lento ou travando": "lento", "Impressora / scanner": "impressora",
+    "Periférico (teclado, mouse, monitor)": "teclado", "Projetor / lousa digital": "projetor", "Instalação de software": "software",
+    "Erro em sistema / programa": "bug", "Acesso, senha ou e-mail": "senha", "Rede / internet / Wi-Fi": "wifi",
+    "Telefonia / ramal": "telefone", "Energia / tomada": "tomada", "Outro": "ajuda",
+  };
+  const svg = (nome, t) => '<svg width="' + (t || 16) + '" height="' + (t || 16) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[nome] || IC.ajuda) + "</svg>";
+  const icone = (nome, t, cls) => { const i = el("i", "ic " + (cls || "")); i.innerHTML = svg(nome, t); return i; };
+  const pintarIcones = (raiz) => (raiz || document).querySelectorAll("[data-ic]").forEach((i) => { i.innerHTML = svg(i.dataset.ic, Number(i.dataset.t) || 16); });
+  pintarIcones();
+
+  // ---------------- aparência e acessibilidade ----------------
+  const raiz = document.documentElement;
+  function marcarAparencia() {
+    document.querySelectorAll(".seg[data-grupo]").forEach((g) => g.querySelectorAll("button").forEach((b) => {
+      const sim = raiz.dataset[g.dataset.grupo] === b.dataset.valor; b.classList.toggle("ativo", sim); b.setAttribute("aria-pressed", sim);
+    }));
+  }
+  document.querySelectorAll(".seg[data-grupo] button").forEach((b) => b.addEventListener("click", () => {
+    raiz.dataset[b.parentElement.dataset.grupo] = b.dataset.valor;
+    try { localStorage.setItem("chamados_aparencia", JSON.stringify({tema: raiz.dataset.tema, cores: raiz.dataset.cores, texto: raiz.dataset.texto})); } catch (e) {}
+    marcarAparencia();
+  }));
+  const menuAp = $("menu-aparencia"), btnAp = $("btn-aparencia");
+  const abrirMenu = (sim) => { menuAp.hidden = !sim; btnAp.setAttribute("aria-expanded", sim); };
+  btnAp.addEventListener("click", (e) => { e.stopPropagation(); abrirMenu(menuAp.hidden); });
+  document.addEventListener("click", (e) => { if (!menuAp.hidden && !menuAp.contains(e.target)) abrirMenu(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !menuAp.hidden) { abrirMenu(false); btnAp.focus(); } });
+  marcarAparencia();
+
+  // ---------------- portais ----------------
+  const PORTAIS = {
+    cliente: {titulo: "Acesso do cliente", nome: "Portal do cliente", ic: "usuario",
+              sub: "Solicite atendimento e converse com o técnico",
+              info: "Abra chamados descrevendo o que precisa, acompanhe o andamento e tire dúvidas direto com o técnico responsável.",
+              cartao: "Solicite um serviço, descreva o problema e converse com o técnico que vai fazer o suporte."},
+    tecnico: {titulo: "Acesso do técnico", nome: "Portal do técnico", ic: "chave",
+              sub: "Atendimento da fila de chamados",
+              info: "Assuma chamados da fila, fale direto com o cliente e conclua informando a solução. A conta é criada pelo administrador.",
+              cartao: "Atende a fila, assume os chamados e lida direto com o cliente até a solução."},
+    admin:   {titulo: "Acesso do administrador", nome: "Administração", ic: "escudo",
+              sub: "Supervisão completa do suporte",
+              info: "Super usuário: vê todas as OS, todos os clientes e todos os técnicos, distribui chamados e gerencia acessos.",
+              cartao: "Super usuário: vê todas as OS, todos os clientes e todos os técnicos, com indicadores e gestão de acessos."},
+  };
+  const servido = /^https?:$/.test(location.protocol);
+  const params = new URLSearchParams(location.search);
+  const paramApi = params.get("api");
+  const trecho = location.pathname.replace(/\/+$/, "").split("/").pop();
+  const PORTAL = PORTAIS[trecho] ? trecho : (PORTAIS[params.get("portal")] ? params.get("portal") : null);
+  const CHAVE_SESSAO = "chamados_sessao_" + (PORTAL || "inicio");
+
+  const CLS_STATUS = {"Aberto": "st-aberto", "Em andamento": "st-andamento", "Concluído": "st-concluido"};
+  const CLS_PRIO = {"Baixa": "pr-baixa", "Média": "pr-media", "Alta": "pr-alta", "Urgente": "pr-urgente"};
+  const NOME_STATUS = {"Aberto": "Aberto", "Em andamento": "Em atendimento", "Concluído": "Resolvido"};
+  const badge = (texto, cls) => el("span", "badge " + (cls || ""), texto);
+  const badgeStatus = (st) => badge(NOME_STATUS[st] || st, CLS_STATUS[st]);
+  const estrelasTxt = (n) => "★".repeat(n) + "☆".repeat(5 - n);
+  const iniciais = (nome) => nome.split(" ").filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+
+  const S = {api: "", token: "", usuario: null, opcoes: null, vista: "chamados", escopo: "todos", status: "Todos",
+             chamados: [], expandido: null, ocupado: false, tecnicos: [], estrelas: {}, usuarios: [], filtroPapel: "todos"};
+
+  const tic = () => { $("relogio").textContent = new Date().toLocaleTimeString("pt-BR"); };
+  tic(); setInterval(tic, 1000);
+
+  const salvar = () => { try { localStorage.setItem(CHAVE_SESSAO, JSON.stringify({api: S.api, token: S.token})); } catch (e) {} };
+  const lerSalvo = () => { try { return JSON.parse(localStorage.getItem(CHAVE_SESSAO) || "{}"); } catch (e) { return {}; } };
+
+  // ---------------- comunicação com o backend (HTTPS) ----------------
+  async function api(metodo, caminho, corpo) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 20000);
+    const headers = {};
+    if (corpo) headers["Content-Type"] = "application/json";
+    if (S.token) headers["Authorization"] = "Bearer " + S.token;
+    try {
+      const r = await fetch(S.api + caminho, {method: metodo, signal: ctrl.signal, headers, body: corpo ? JSON.stringify(corpo) : undefined});
+      const dados = await r.json().catch(() => ({ok: false, erro: "Resposta inválida do backend (HTTP " + r.status + ")."}));
+      if (r.status === 401 && S.token) { sessaoExpirada(dados.erro || "Sessão expirada. Entre novamente."); throw new Error(dados.erro || "Sessão expirada."); }
+      if (!r.ok || dados.ok === false) throw new Error(dados.erro || "HTTP " + r.status);
+      return dados;
+    } catch (e) {
+      if (e.name === "AbortError") throw new Error("O backend demorou para responder.");
+      if (e instanceof TypeError) throw new Error("Sem resposta do backend. Confira o endereço e se o Colab está rodando.");
+      throw e;
+    } finally { clearTimeout(t); }
+  }
+
+  const pilula = (tipo, texto) => { const p = $("pilula"); p.className = "pilula " + tipo; p.innerHTML = "<i></i>"; p.append(texto); };
+  const caixaMsg = (id, tipo, texto) => { const m = $(id); m.className = "msg " + tipo; m.textContent = texto; m.hidden = false; };
+  const ocupar = (botao, sim, texto) => {
+    botao.disabled = sim;
+    const span = botao.querySelector("span");
+    if (span) { if (sim) { botao.dataset.txt = span.textContent; span.textContent = texto || "Aguarde..."; } else if (botao.dataset.txt) span.textContent = botao.dataset.txt; }
+  };
+  function normalizar(url) {
+    url = (url || "").trim().replace(/\/+$/, "");
+    if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+    return url;
+  }
+  async function conectar() {
+    if (!S.api) throw new Error("Informe o endereço do servidor.");
+    pilula("", "Conectando...");
+    const st = await api("GET", "/api/status");
+    S.opcoes = await api("GET", "/api/opcoes");
+    $("projeto").textContent = st.projeto;
+    $("equipe").textContent = "Equipe: " + st.equipe.join(", ");
+    pilula("ok", "Backend online · Firebase OK");
+  }
+  async function garantirConexao() {
+    if (!servido || paramApi) {
+      const v = normalizar($("api-url").value);
+      if (v !== S.api) { S.api = v; S.opcoes = null; $("api-url").value = v; }
+    }
+    if (!S.opcoes) { try { await conectar(); } catch (e) { pilula("erro", e.message); throw e; } }
+  }
+
+  // ---------------- página inicial com os três acessos ----------------
+  function linkPortal(p) {
+    if (servido && !paramApi) return location.origin + "/" + p;
+    const base = location.href.split(/[?#]/)[0];
+    return base + "?portal=" + p + (S.api ? "&api=" + encodeURIComponent(S.api) : "");
+  }
+  function montarInicio() {
+    const lista = $("lista-portais"); lista.innerHTML = "";
+    Object.entries(PORTAIS).forEach(([p, cfg]) => {
+      const c = el("div", "portal pp-" + p);
+      const ig = el("div", "ic-grande"); ig.append(icone(cfg.ic, 26));
+      const url = linkPortal(p);
+      const link = el("div", "link mono", url);
+      const acoes = el("div", "acoes-portal");
+      const entrar = el("a", "btn"); entrar.href = url; entrar.append(icone("seta", 15), "Entrar");
+      const copiar = el("button", "btn sec"); copiar.type = "button"; copiar.append(icone("copiar", 15), "Copiar link");
+      copiar.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(url); copiar.lastChild.textContent = "Copiado!"; }
+        catch (e) { const r = document.createRange(); r.selectNodeContents(link); getSelection().removeAllRanges(); getSelection().addRange(r); copiar.lastChild.textContent = "Selecionado: Ctrl+C"; }
+        setTimeout(() => { copiar.lastChild.textContent = "Copiar link"; }, 2500);
+      });
+      acoes.append(entrar, copiar);
+      c.append(ig, el("h2", "", cfg.titulo), el("p", "", cfg.cartao), link, acoes);
+      lista.append(c);
+    });
+  }
+  $("api-inicio").addEventListener("change", () => { S.api = normalizar($("api-inicio").value); $("api-inicio").value = S.api; montarInicio(); conectar().catch((e) => pilula("erro", e.message)); });
+
+  // ---------------- login do portal ----------------
+  function telaLogin(modo) {
+    $("form-login").hidden = modo !== "entrar";
+    $("form-cadastro").hidden = modo !== "cadastro";
+    $("form-esqueci").hidden = modo !== "esqueci";
+    $("abas-login").hidden = PORTAL !== "cliente" || modo === "esqueci";
+    document.querySelectorAll("#abas-login button").forEach((x) => x.classList.toggle("ativo", x.dataset.aba === modo));
+    $("login-msg").hidden = true;
+  }
+  function montarLogin() {
+    const cfg = PORTAIS[PORTAL];
+    document.querySelector(".login-card").className = "login-card pp-" + PORTAL;
+    $("login-ic").innerHTML = svg(cfg.ic, 26);
+    $("login-titulo").textContent = cfg.nome; $("login-sub").textContent = cfg.sub;
+    $("info-ic").innerHTML = svg(cfg.ic, 16); $("info-portal").textContent = cfg.info;
+    $("portal-tag").textContent = cfg.nome; $("portal-tag").className = "tag pp-" + PORTAL; $("portal-tag").hidden = false;
+    document.title = cfg.nome + " · Central de Chamados TI";
+    telaLogin("entrar");
+  }
+  function mostrarLogin() { $("tela-app").hidden = true; $("tela-inicio").hidden = true; $("tela-login").hidden = false; $("usuario-chip").hidden = true; }
+  function sessaoExpirada(texto) { S.token = ""; S.usuario = null; salvar(); mostrarLogin(); caixaMsg("login-msg", "erro", texto); }
+
+  document.querySelectorAll("#abas-login button").forEach((b) => b.addEventListener("click", () => telaLogin(b.dataset.aba)));
+  $("ir-esqueci").addEventListener("click", () => { $("e-email").value = $("l-email").value; telaLogin("esqueci"); $("e-email").focus(); });
+  $("voltar-login").addEventListener("click", () => telaLogin("entrar"));
+
+  $("form-login").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const b = $("b-entrar"); ocupar(b, true, "Entrando...");
+    try {
+      await garantirConexao();
+      const r = await api("POST", "/api/auth/login", {email: $("l-email").value, senha: $("l-senha").value, portal: PORTAL});
+      S.token = r.token; salvar(); $("l-senha").value = ""; $("login-msg").hidden = true;
+      entrarApp(r.usuario);
+    } catch (err) { caixaMsg("login-msg", "erro", err.message); }
+    finally { ocupar(b, false); }
+  });
+  $("form-cadastro").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const b = $("b-cadastrar"); ocupar(b, true, "Criando conta...");
+    try {
+      await garantirConexao();
+      const r = await api("POST", "/api/auth/cadastro", {nome: $("c-nome").value, idade: $("c-idade").value, cpf: $("c-cpf").value,
+                                                         email: $("c-email").value, senha: $("c-senha").value});
+      S.token = r.token; salvar(); $("form-cadastro").reset(); $("login-msg").hidden = true;
+      entrarApp(r.usuario);
+    } catch (err) { caixaMsg("login-msg", "erro", err.message); }
+    finally { ocupar(b, false); }
+  });
+  $("form-esqueci").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const b = $("b-esqueci"); ocupar(b, true, "Enviando...");
+    try {
+      await garantirConexao();
+      const r = await api("POST", "/api/auth/esqueci", {email: $("e-email").value, portal: PORTAL});
+      caixaMsg("login-msg", "ok", r.mensagem);
+    } catch (err) { caixaMsg("login-msg", "erro", err.message); }
+    finally { ocupar(b, false); }
+  });
+  $("sair").addEventListener("click", async () => {
+    try { await api("POST", "/api/auth/sair"); } catch (e) {}
+    S.token = ""; S.usuario = null; salvar(); mostrarLogin(); telaLogin("entrar");
+    caixaMsg("login-msg", "ok", "Você saiu do sistema.");
+  });
+
+  // ---------------- entrada no sistema por perfil ----------------
+  const KPIS = {
+    cliente: [["Meus abertos", "ticket", "", (r) => r.contagem["Aberto"]], ["Em atendimento", "chave", "and", (r) => r.contagem["Em andamento"]],
+              ["Resolvidos", "ok", "fim", (r) => r.contagem["Concluído"]], ["Aguardando sua avaliação", "estrela", "aval", (r) => r.resumo.aguardando_avaliacao]],
+    tecnico: [["Na fila (sem técnico)", "ticket", "", (r) => r.resumo.fila], ["Meus em atendimento", "chave", "and", (r) => r.resumo.meus_ativos],
+              ["Resolvidos por mim", "ok", "fim", (r) => r.resumo.meus_concluidos], ["Fora do prazo (SLA)", "alarme", "atr", (r) => r.resumo.atrasados]],
+    admin:   [["Na fila (sem técnico)", "ticket", "", (r) => r.resumo.fila], ["Em atendimento", "chave", "and", (r) => r.contagem["Em andamento"]],
+              ["Resolvidos", "ok", "fim", (r) => r.contagem["Concluído"]], ["Fora do prazo (SLA)", "alarme", "atr", (r) => r.resumo.atrasados]],
+  };
+  const COLUNAS = {cliente: ["Protocolo", "Tipo", "Local", "Status", "Técnico", "Prazo"],
+                   equipe: ["Protocolo", "Solicitante", "Tipo", "Prioridade", "Status", "Técnico", "Prazo"]};
+  const TITULO_FILA = {cliente: "Meus chamados", tecnico: "Fila de atendimento", admin: "Todas as OS"};
+  const papel = () => S.usuario.papel;
+  const colunas = () => COLUNAS[papel() === "cliente" ? "cliente" : "equipe"];
+
+  function cartaoKpi(rotulo, ic, cls, id) {
+    const k = el("div", "kpi " + cls); const d = el("div"); const v = el("strong", "", "0"); v.id = id;
+    d.append(el("span", "", rotulo), v); k.append(d, icone(ic, 22)); return k;
+  }
+
+  function entrarApp(u) {
+    S.usuario = u; S.expandido = null; S.status = "Todos"; S.escopo = u.papel === "tecnico" ? "fila" : "todos"; $("busca").value = "";
+    $("tela-login").hidden = true; $("tela-app").hidden = false; $("usuario-chip").hidden = false;
+    $("usuario-chip").className = "chip-usuario pp-" + u.papel;
+    $("u-avatar").textContent = iniciais(u.nome); $("u-nome").textContent = u.nome; $("u-papel").textContent = u.papel_nome;
+    $("abas").hidden = u.papel !== "admin";
+    const kp = $("kpis"); kp.innerHTML = "";
+    KPIS[u.papel].forEach(([rot, ic, cls], i) => kp.append(cartaoKpi(rot, ic, cls, "k" + i)));
+    const cab = $("cabecalho"); cab.innerHTML = ""; colunas().forEach((c) => cab.append(el("th", "", c)));
+    $("titulo-fila").textContent = TITULO_FILA[u.papel];
+    $("escopos").hidden = u.papel === "cliente";
+    marcarFiltros();
+    const cliente = u.papel === "cliente";
+    $("cartao-abrir").hidden = !cliente;
+    $("grade").classList.toggle("uma", !cliente);
+    if (cliente) {
+      montarFormChamado();
+      $("solicitante-info").textContent = u.nome + " · " + u.idade + " anos · CPF " + u.cpf;
+      $("dica-pref").hidden = !(Number(u.idade) >= S.opcoes.idade_preferencial);
+      $("msg").hidden = true;
+    }
+    if (u.papel === "admin") carregarTecnicos();
+    mostrarVista("chamados");
+  }
+
+  function mostrarVista(v) {
+    S.vista = v;
+    ["chamados", "painel", "usuarios"].forEach((x) => { $("vista-" + x).hidden = x !== v; });
+    document.querySelectorAll("#abas button").forEach((b) => { const sim = b.dataset.vista === v; b.classList.toggle("ativo", sim); b.setAttribute("aria-current", sim ? "page" : "false"); });
+    if (v === "chamados") carregar();
+    if (v === "painel") carregarPainel();
+    if (v === "usuarios") carregarUsuarios();
+  }
+  document.querySelectorAll("#abas button").forEach((b) => b.addEventListener("click", () => mostrarVista(b.dataset.vista)));
+
+  // ---------------- formulário de abertura (cliente) ----------------
+  function iconeTipoSelecionado() { $("tipo-ic").innerHTML = svg(ICONE_TIPO[$("tipo").value] || "ajuda", 20); }
+  function montarFormChamado() {
+    const o = S.opcoes;
+    const tipo = $("tipo"); tipo.innerHTML = "";
+    const ph = el("option", "", "Selecione o tipo..."); ph.value = ""; ph.defaultSelected = true; tipo.append(ph);
+    o.tipos.forEach((g) => { const og = document.createElement("optgroup"); og.label = g.grupo; g.itens.forEach((t) => og.append(el("option", "", t))); tipo.append(og); });
+    const setor = $("setor"); setor.innerHTML = "";
+    const ps = el("option", "", "Selecione..."); ps.value = ""; ps.defaultSelected = true; setor.append(ps);
+    o.setores.forEach((s) => setor.append(el("option", "", s)));
+    const prios = $("prios"); prios.innerHTML = "";
+    o.prioridades.forEach((p) => {
+      const lab = el("label"); const r = el("input"); r.type = "radio"; r.name = "prioridade"; r.value = p;
+      if (p === "Média") { r.defaultChecked = true; r.checked = true; }
+      const s = el("span", "", p); s.append(el("small", "", "SLA " + o.prazos[p] + "h")); lab.append(r, s); prios.append(lab);
+    });
+    iconeTipoSelecionado(); contar();
+  }
+  const contar = () => { $("contador").textContent = $("descricao").value.length + "/500"; };
+  $("descricao").addEventListener("input", contar);
+  $("tipo").addEventListener("change", iconeTipoSelecionado);
+  document.querySelectorAll(".cpf").forEach((c) => c.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/\D/g, "").slice(0, 11)
+      .replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }));
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const b = $("enviar"); ocupar(b, true, "Enviando...");
+    const marcada = document.querySelector('input[name="prioridade"]:checked');
+    try {
+      const res = await api("POST", "/api/chamados", {tipo: $("tipo").value, setor: $("setor").value, local: $("local").value,
+        patrimonio: $("patrimonio").value, prioridade: marcada ? marcada.value : "", descricao: $("descricao").value});
+      $("form").reset(); setTimeout(() => { contar(); iconeTipoSelecionado(); }, 0);
+      let texto = "Chamado aberto! Protocolo #" + res.protocolo + " · prioridade " + res.prioridade + " · prazo " + res.prazo + ".";
+      if (res.preferencial) texto += " Atendimento preferencial aplicado.";
+      caixaMsg("msg", "ok", texto);
+      S.expandido = res.chave; S.status = "Todos"; $("busca").value = ""; marcarFiltros();
+      carregar();
+    } catch (err) { caixaMsg("msg", "erro", err.message); }
+    finally { ocupar(b, false); }
+  });
+  $("form").addEventListener("reset", () => { $("msg").hidden = true; });
+
+  // ---------------- consulta e fila ----------------
+  function marcarFiltros() {
+    document.querySelectorAll("[data-escopo]").forEach((b) => b.classList.toggle("ativo", b.dataset.escopo === S.escopo));
+    document.querySelectorAll("[data-status]").forEach((b) => b.classList.toggle("ativo", b.dataset.status === S.status));
+  }
+  document.querySelectorAll("[data-escopo]").forEach((b) => b.addEventListener("click", () => { S.escopo = b.dataset.escopo; marcarFiltros(); carregar(); }));
+  document.querySelectorAll("[data-status]").forEach((b) => b.addEventListener("click", () => { S.status = b.dataset.status; marcarFiltros(); carregar(); }));
+  $("form-busca").addEventListener("submit", (e) => { e.preventDefault(); carregar(); });
+  $("atualizar").addEventListener("click", () => carregar());
+
+  async function carregar(auto) {
+    if (!S.usuario) return;
+    const q = new URLSearchParams({status: S.status, busca: $("busca").value.trim(), escopo: papel() === "cliente" ? "todos" : S.escopo});
+    if (auto) q.set("auto", "1");
+    try {
+      const res = await api("GET", "/api/chamados?" + q.toString());
+      S.chamados = res.itens;
+      $("total").textContent = res.encontrados + " de " + res.total;
+      KPIS[papel()].forEach((k, i) => { $("k" + i).textContent = k[3](res) || 0; });
+      render();
+      if (!auto) pilula("ok", "Backend online · Firebase OK");
+    } catch (e) { pilula("erro", e.message); }
+  }
+
+  function celulaTecnico(c) {
+    const td = el("td");
+    if (c.tecnico) td.append(el("div", "", c.tecnico)); else td.append(el("span", "sem-tec", c.status === "Concluído" ? "-" : "aguardando"));
+    return td;
+  }
+
+  function render() {
+    const corpo = $("lista"); corpo.innerHTML = "";
+    const cliente = papel() === "cliente";
+    S.chamados.forEach((c) => {
+      const tr = el("tr", "ch" + (S.expandido === c.chave ? " aberta" : ""));
+      tr.tabIndex = 0; tr.setAttribute("aria-expanded", S.expandido === c.chave);
+      const tProto = el("td"); tProto.append(el("span", "proto", "#" + c.protocolo));
+      const tTipo = el("td"); const tp = el("div", "tipo"); tp.append(icone(ICONE_TIPO[c.tipo] || "ajuda", 16), el("span", "", c.tipo)); tTipo.append(tp);
+      const tSt = el("td"); tSt.append(badgeStatus(c.status));
+      if (c.atrasado) tSt.append(badge("Atrasado", "atraso"));
+      if (c.avaliacao) tSt.append(badge(estrelasTxt(c.avaliacao.nota), "estrelas-tag"));
+      const tPrazo = el("td", "peq mono", c.prazo);
+      if (cliente) {
+        const tLocal = el("td"); tLocal.append(el("div", "", c.local), el("div", "peq", c.setor));
+        tr.append(tProto, tTipo, tLocal, tSt, celulaTecnico(c), tPrazo);
+      } else {
+        const tSol = el("td"); tSol.append(el("div", "forte", c.nome), el("div", "peq", c.setor + " · " + c.local));
+        const tPr = el("td"); tPr.append(badge(c.prioridade, CLS_PRIO[c.prioridade])); if (c.preferencial) tPr.append(badge("60+", "pref"));
+        tr.append(tProto, tSol, tTipo, tPr, tSt, celulaTecnico(c), tPrazo);
+      }
+      const alternar = () => { S.expandido = S.expandido === c.chave ? null : c.chave; render(); };
+      tr.addEventListener("click", alternar);
+      tr.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); alternar(); } });
+      corpo.append(tr);
+      if (S.expandido === c.chave) corpo.append(detalhe(c));
+    });
+    $("vazio").hidden = S.chamados.length > 0;
+    $("vazio-txt").textContent = $("busca").value.trim() || S.status !== "Todos" || (!cliente && S.escopo !== "todos")
+      ? "Nenhum chamado encontrado nessa consulta." : (cliente ? "Você ainda não abriu chamados." : "Nenhum chamado registrado ainda.");
+  }
+
+  function detalhe(c) {
+    const tr = el("tr", "det"); const td = el("td"); td.colSpan = colunas().length;
+    const grade = el("div", "det-grade");
+    const esq = el("div");
+    const r1 = el("div", "rotulo"); r1.append(icone("descricao", 14), "Descrição do problema");
+    esq.append(r1, el("p", "texto-desc", c.descricao));
+    const dl = el("dl");
+    const prio = c.prioridade_informada && c.prioridade_informada !== c.prioridade
+      ? c.prioridade_informada + " → " + c.prioridade + " (preferencial 60+)" : c.prioridade;
+    [["Solicitante", c.nome + " · " + c.idade + " anos · CPF " + c.cpf], ["Setor / local", c.setor + " · " + c.local],
+     ["Patrimônio", c.patrimonio || "não informado"], ["Prioridade", prio],
+     ["Técnico", c.tecnico || "aguardando um técnico assumir"], ["Aberto em", c.aberto],
+     ["Prazo (SLA)", c.prazo + (c.atrasado ? " · ATRASADO" : "")], ["Atualizado", c.atualizado]]
+      .forEach(([k, v]) => dl.append(el("dt", "", k), el("dd", "", v)));
+    if (c.email) { const dd = el("dd"); const a = el("a", "", c.email); a.href = "mailto:" + c.email + "?subject=" + encodeURIComponent("Chamado #" + c.protocolo); dd.append(a); dl.append(el("dt", "", "Contato"), dd); }
+    if (c.avaliacao) dl.append(el("dt", "", "Avaliação"), el("dd", "", estrelasTxt(c.avaliacao.nota) + (c.avaliacao.comentario ? " · " + c.avaliacao.comentario : "")));
+    esq.append(dl);
+    if (c.solucao) { const s = el("div", "solucao"); const rs = el("div", "rotulo"); rs.append(icone("ok", 14), "Solução aplicada"); s.append(rs, el("div", "", c.solucao)); esq.append(s); }
+    const dir = el("div");
+    const r2 = el("div", "rotulo"); r2.append(icone("historico", 14), "Histórico e conversa");
+    dir.append(r2);
+    const ul = el("ul", "hist");
+    c.historico.forEach((h) => {
+      const li = el("li", h.tipo);
+      const quem = el("div", "quem");
+      if (h.tipo === "comentario") quem.append(icone("chat", 13)); else if (h.tipo === "avaliacao") quem.append(icone("estrela", 13)); else quem.append(badgeStatus(h.status));
+      quem.append(el("span", "forte", h.autor), el("span", "peq", (h.papel ? h.papel + " · " : "") + h.em));
+      li.append(quem, el("div", h.tipo === "status" ? "" : "balao", h.nota));
+      ul.append(li);
+    });
+    dir.append(ul);
+    grade.append(esq, dir);
+    td.append(grade, areaAcoes(c));
+    td.addEventListener("click", (e) => e.stopPropagation());
+    td.addEventListener("keydown", (e) => e.stopPropagation());
+    tr.append(td);
+    return tr;
+  }
+
+  function areaAcoes(c) {
+    const box = el("div", "det-acoes");
+    const a = c.acoes || [];
+    const aviso = el("div", "aviso"); aviso.setAttribute("role", "alert");
+    async function executar(acao, corpo) {
+      box.querySelectorAll("button,select,textarea,input").forEach((x) => (x.disabled = true));
+      S.ocupado = true; aviso.textContent = "";
+      try {
+        await api("POST", "/api/chamados/" + encodeURIComponent(c.chave) + "/" + acao, corpo || {});
+        delete S.estrelas[c.chave];
+        if (acao === "assumir" && S.escopo === "fila") { S.escopo = "meus"; marcarFiltros(); }
+        if (acao === "devolver" && S.escopo === "meus") { S.escopo = "fila"; marcarFiltros(); }
+        S.expandido = c.chave;
+        await carregar();
+      } catch (err) { aviso.textContent = err.message; box.querySelectorAll("button,select,textarea,input").forEach((x) => (x.disabled = false)); }
+      finally { S.ocupado = false; }
+    }
+    const botao = (rotulo, ic, cls, fn) => { const b = el("button", "btn mini " + cls); b.type = "button"; b.append(icone(ic, 14), rotulo); b.addEventListener("click", fn); return b; };
+
+    if (!a.length) {
+      const l = el("div", "leitura"); l.append(icone("cadeado", 14));
+      l.append(c.status === "Concluído" ? (c.avaliacao ? "Chamado encerrado e avaliado." : "Chamado encerrado.")
+        : c.tecnico ? "Em atendimento por " + c.tecnico + ". Somente o responsável ou o administrador altera este chamado." : "Aguardando um técnico assumir.");
+      box.append(l); return box;
+    }
+    const linha1 = el("div", "linha-acoes");
+    if (a.includes("assumir")) linha1.append(botao(c.tecnico ? "Assumir no lugar de " + c.tecnico : "Assumir chamado", "play", "", () => executar("assumir")));
+    if (a.includes("atribuir")) {
+      const sel = el("select"); sel.setAttribute("aria-label", "Técnico para atribuir");
+      const ph = el("option", "", "Atribuir a um técnico..."); ph.value = ""; sel.append(ph);
+      S.tecnicos.forEach((t) => { const o = el("option", "", t.nome + " (" + t.papel_nome + ")"); o.value = t.uid; sel.append(o); });
+      linha1.append(sel, botao("Atribuir", "atribuir", "sec", () => { if (!sel.value) { aviso.textContent = "Escolha o técnico."; return; } executar("atribuir", {tecnico_uid: sel.value}); }));
+    }
+    if (a.includes("devolver")) linha1.append(botao("Devolver à fila", "voltar", "sec", () => executar("devolver")));
+    if (linha1.childNodes.length) box.append(linha1);
+
+    if (a.includes("comentar") || a.includes("concluir") || a.includes("reabrir")) {
+      const linha2 = el("div", "linha-acoes");
+      const txt = el("textarea", "nota"); txt.maxLength = 300;
+      txt.placeholder = a.includes("concluir") ? "Mensagem para o cliente ou solução aplicada..."
+        : a.includes("reabrir") ? "Motivo da reabertura (o problema voltou?)" : "Escreva sua dúvida ou mensagem para o técnico...";
+      txt.setAttribute("aria-label", txt.placeholder);
+      linha2.append(txt);
+      if (a.includes("comentar")) linha2.append(botao("Enviar mensagem", "chat", "sec", () => executar("comentar", {texto: txt.value})));
+      if (a.includes("concluir")) linha2.append(botao("Concluir com esta solução", "ok", "verde", () => executar("concluir", {texto: txt.value})));
+      if (a.includes("reabrir")) linha2.append(botao("Reabrir chamado", "voltar", "perigo", () => executar("reabrir", {texto: txt.value})));
+      box.append(linha2);
+    }
+    if (a.includes("avaliar")) {
+      const linha3 = el("div", "linha-acoes");
+      const estrelas = el("div", "estrelas"); estrelas.setAttribute("role", "radiogroup"); estrelas.setAttribute("aria-label", "Nota do atendimento");
+      const pintar = () => estrelas.querySelectorAll(".estrela").forEach((s, i) => { const on = i < (S.estrelas[c.chave] || 0); s.classList.toggle("on", on); s.setAttribute("aria-checked", i + 1 === S.estrelas[c.chave]); });
+      for (let i = 1; i <= 5; i++) {
+        const s = el("button", "estrela", "★"); s.type = "button"; s.title = i + " de 5"; s.setAttribute("role", "radio"); s.setAttribute("aria-label", i + " de 5 estrelas");
+        s.addEventListener("click", () => { S.estrelas[c.chave] = i; pintar(); }); estrelas.append(s);
+      }
+      pintar();
+      const com = el("input", "nota"); com.placeholder = "Comentário sobre o atendimento (opcional)"; com.maxLength = 200; com.style.flex = "1"; com.style.minWidth = "200px";
+      linha3.append(el("span", "forte", "Avalie o atendimento:"), estrelas, com,
+        botao("Enviar avaliação", "estrela", "", () => executar("avaliar", {nota: S.estrelas[c.chave] || 0, texto: com.value})));
+      box.append(linha3);
+    }
+    box.append(aviso);
+    return box;
+  }
+
+  // ---------------- painel do administrador ----------------
+  async function carregarPainel() {
+    try {
+      const p = await api("GET", "/api/painel");
+      const k = $("painel-kpis"); k.innerHTML = "";
+      [["Abertos", p.contagem["Aberto"], "ticket", ""], ["Em atendimento", p.contagem["Em andamento"], "chave", "and"],
+       ["Resolvidos", p.contagem["Concluído"], "ok", "fim"], ["Fora do prazo (SLA)", p.atrasados, "alarme", "atr"],
+       ["Satisfação média", p.satisfacao === null ? "-" : p.satisfacao, "estrela", "aval", p.satisfacao === null ? "sem avaliações" : "/5 · " + p.avaliacoes + " aval."]]
+        .forEach(([rot, val, ic, cls, extra], i) => { const c = cartaoKpi(rot, ic, cls, "pk" + i); k.append(c); $("pk" + i).textContent = val; if (extra) $("pk" + i).append(el("small", "", extra)); });
+      const tc = el("div", "kpi neutro"); const d = el("div"); const m = p.tempo_medio_min;
+      const v = el("strong", "", m === null ? "-" : m < 60 ? String(m) : String(Math.round(m / 6) / 10).replace(".", ","));
+      if (m !== null) v.append(el("small", "", m < 60 ? "min" : "horas"));
+      d.append(el("span", "", "Tempo médio de resolução"), v); tc.append(d, icone("relogio", 22)); k.append(tc);
+      const tb = $("p-tecnicos"); tb.innerHTML = "";
+      if (!p.por_tecnico.length) { const tr = el("tr"); const td = el("td", "peq", "Nenhum técnico cadastrado ainda."); td.colSpan = 4; tr.append(td); tb.append(tr); }
+      p.por_tecnico.forEach((t) => {
+        const tr = el("tr"); const tn = el("td"); const tt = el("div", "tipo"); tt.append(icone("usuario", 15), el("span", "forte", t.nome)); tn.append(tt);
+        tr.append(tn, el("td", "", t.ativos), el("td", "", t.concluidos), el("td", "", t.satisfacao === null ? "-" : t.satisfacao + " / 5")); tb.append(tr);
+      });
+      const PLURAL = {"Cliente": "Clientes", "Técnico": "Técnicos", "Administrador": "Administradores"};
+      const pu = $("p-usuarios"); pu.innerHTML = "";
+      Object.entries(p.usuarios).forEach(([nome, qtd]) => { const c = el("div"); c.append(el("strong", "", qtd), el("span", "peq", qtd === 1 ? nome : (PLURAL[nome] || nome))); pu.append(c); });
+      const pt = $("p-tipos"); pt.innerHTML = "";
+      const max = Math.max(1, ...p.por_tipo.map((t) => t.qtd));
+      if (!p.por_tipo.length) pt.append(el("div", "peq", "Nenhum chamado registrado ainda."));
+      p.por_tipo.forEach((t) => {
+        const l = el("div", "barra-linha"); const meio = el("div"); const tr = el("div", "trilho"); const i = el("i"); i.style.width = (100 * t.qtd / max) + "%"; tr.append(i);
+        meio.append(el("div", "", t.tipo), tr); l.append(icone(ICONE_TIPO[t.tipo] || "ajuda", 16), meio, el("div", "num", t.qtd)); pt.append(l);
+      });
+      pilula("ok", "Backend online · Firebase OK");
+    } catch (e) { pilula("erro", e.message); }
+  }
+  $("atualizar-painel").addEventListener("click", carregarPainel);
+
+  // ---------------- clientes e técnicos (administrador) ----------------
+  async function carregarTecnicos() { try { S.tecnicos = (await api("GET", "/api/tecnicos")).tecnicos; } catch (e) { S.tecnicos = []; } }
+
+  document.querySelectorAll("[data-papel]").forEach((b) => b.addEventListener("click", () => {
+    S.filtroPapel = b.dataset.papel;
+    document.querySelectorAll("[data-papel]").forEach((x) => x.classList.toggle("ativo", x === b));
+    renderUsuarios();
+  }));
+
+  async function carregarUsuarios() {
+    $("aviso-usuarios").textContent = "";
+    try { S.usuarios = (await api("GET", "/api/usuarios")).usuarios; renderUsuarios(); }
+    catch (e) { $("aviso-usuarios").textContent = e.message; }
+  }
+
+  function renderUsuarios() {
+    const lista = S.usuarios.filter((u) => S.filtroPapel === "todos" || u.papel === S.filtroPapel);
+    $("total-usuarios").textContent = lista.length;
+    const tb = $("lista-usuarios"); tb.innerHTML = "";
+    lista.forEach((u) => {
+      const tr = el("tr");
+      const tn = el("td"); tn.append(el("div", "forte", u.nome + (u.voce ? " (você)" : u.principal ? " (principal)" : "")), el("div", "peq", u.email));
+      const tp = el("td");
+      const editavel = !u.voce && !u.principal;
+      if (editavel) {
+        const sel = el("select"); sel.style.width = "auto"; sel.setAttribute("aria-label", "Perfil de " + u.nome);
+        Object.entries(S.opcoes.papeis).forEach(([v, n]) => { const o = el("option", "", n); o.value = v; o.selected = v === u.papel; sel.append(o); });
+        sel.addEventListener("change", () => alterarUsuario(u, {papel: sel.value}));
+        tp.append(sel);
+      } else tp.append(el("span", "tag pp-" + u.papel, u.papel_nome));
+      const ts = el("td"); ts.append(badge(u.ativo ? "Ativo" : "Desativado", u.ativo ? "st-concluido" : "atraso"));
+      const tc = el("td", "peq", u.chamados);
+      const ta = el("td"); const caixa = el("div", "linha-acoes");
+      if (u.papel !== "admin" || !u.principal) {
+        const ver = el("button", "btn mini sec"); ver.type = "button"; ver.append(icone("ticket", 14), "Ver OS");
+        ver.addEventListener("click", () => { $("busca").value = u.nome; S.escopo = "todos"; S.status = "Todos"; marcarFiltros(); mostrarVista("chamados"); });
+        caixa.append(ver);
+      }
+      if (editavel) {
+        const b = el("button", "btn mini " + (u.ativo ? "perigo" : "sec")); b.type = "button";
+        b.append(icone(u.ativo ? "cadeado" : "ok", 14), u.ativo ? "Desativar" : "Reativar");
+        b.addEventListener("click", () => alterarUsuario(u, {ativo: !u.ativo}));
+        caixa.append(b);
+      }
+      ta.append(caixa);
+      tr.append(tn, tp, ts, tc, el("td", "peq mono", u.criado), ta); tb.append(tr);
+    });
+    if (!lista.length) { const tr = el("tr"); const td = el("td", "peq", "Nenhum usuário neste filtro."); td.colSpan = 6; tr.append(td); tb.append(tr); }
+  }
+
+  async function alterarUsuario(u, mudancas) {
+    $("aviso-usuarios").textContent = "";
+    try { await api("PATCH", "/api/usuarios/" + encodeURIComponent(u.uid), mudancas); await carregarTecnicos(); }
+    catch (e) { $("aviso-usuarios").textContent = e.message; }
+    carregarUsuarios();
+  }
+
+  $("form-usuario").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const b = $("b-criar"); ocupar(b, true, "Criando...");
+    try {
+      await api("POST", "/api/usuarios", {nome: $("n-nome").value, email: $("n-email").value, senha: $("n-senha").value, papel: $("n-papel").value});
+      caixaMsg("msg-usuario", "ok", "Usuário criado. Envie para a pessoa o link do portal, o e-mail e a senha inicial.");
+      $("form-usuario").reset(); await carregarTecnicos(); carregarUsuarios();
+    } catch (err) { caixaMsg("msg-usuario", "erro", err.message); }
+    finally { ocupar(b, false); }
+  });
+
+  // ---------------- atualização automática ----------------
+  setInterval(() => {
+    if (!S.usuario || S.vista !== "chamados" || S.ocupado) return;
+    const foco = document.activeElement;
+    if (foco && foco.closest && foco.closest("tr.det, #form, .menu-aparencia")) return;
+    const det = document.querySelector("tr.det");
+    if (det && [...det.querySelectorAll("textarea,input")].some((x) => x.value.trim())) return;
+    carregar(true);
+  }, 15000);
+
+  // ---------------- início ----------------
+  async function iniciar() {
+    const salvo = lerSalvo();
+    S.api = paramApi ? normalizar(paramApi) : (servido ? location.origin : (salvo.api || ""));
+    $("api-url").value = S.api; $("api-inicio").value = S.api;
+    $("servidor-box").hidden = servido && !paramApi;
+    if (!PORTAL) {                                       // página inicial: três acessos
+      $("tela-inicio").hidden = false; $("tela-login").hidden = true; $("tela-app").hidden = true;
+      $("servidor-inicio").hidden = servido && !paramApi;
+      montarInicio();
+      if (S.api) conectar().catch((e) => pilula("erro", e.message)); else pilula("", "Informe o servidor");
+      return;
+    }
+    montarLogin(); mostrarLogin();
+    if (!S.api) { pilula("", "Informe o servidor"); return; }
+    try { await conectar(); } catch (e) { pilula("erro", e.message); return; }
+    if (salvo.token && salvo.api === S.api) {
+      S.token = salvo.token;
+      try {
+        const u = (await api("GET", "/api/eu")).usuario;
+        if (u.papel !== PORTAL) { S.token = ""; salvar(); caixaMsg("login-msg", "erro", "Sua conta é de " + u.papel_nome.toLowerCase() + ": use o link /" + u.papel + "."); }
+        else entrarApp(u);
+      } catch (e) { S.token = ""; salvar(); }
+    }
+  }
+  iniciar();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Gerados pelo build e pelos testes
+dist/
+tests/saida/
+
+# Colab / Jupyter
+.ipynb_checkpoints/
+
+# Arquivos que o backend cria quando roda
+cloudflared
+cloudflared.log
+/index.html
+
+# Credenciais: nunca versionar
+.env
+*.env
+secrets*.json
+serviceAccount*.json
